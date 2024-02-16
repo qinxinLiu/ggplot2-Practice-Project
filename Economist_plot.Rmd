@@ -1,0 +1,78 @@
+---
+title: "Economist_plot"
+output: html_document
+date: "2024-02-16"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#### Purpose: Recreating the plot of "Corruption and Human Development" from The Economist by ggplot2
+
+```{r}
+library(data.table)
+library(ggplot2)
+library(tidyr)
+library(readr)
+library(ggthemes)
+df <- fread('/Users/mac/Desktop/Economist_Assignment_Data.csv',drop = 1)
+
+head(df)
+
+```
+
+1. Create a scatter plot of CPI vs HDI, change the shape of points and add a trend line
+
+```{r}
+pl <- ggplot(df, aes(x = CPI, y = HDI)) + 
+  geom_point(aes(color = Region),shape = 1, size = 4)
+print(pl)
+
+```
+
+2. Add a trend line
+
+```{r}
+#se : significant interval
+pl2<- pl +  geom_smooth(aes(group = 1),method = 'lm',formula = y ~ log(x), se = FALSE,color = 'red')
+
+
+```
+
+3. Change each point on plot to its corresponding country
+
+```{r}
+pointsToLabel <- c("Russia", "Venezuela", "Iraq", "Myanmar", "Sudan",
+                   "Afghanistan", "Congo", "Greece", "Argentina", "Brazil",
+                   "India", "Italy", "China", "South Africa", "Spane",
+                   "Botswana", "Cape Verde", "Bhutan", "Rwanda", "France",
+                   "United States", "Germany", "Britain", "Barbados", "Norway", "Japan",
+                   "New Zealand", "Singapore")
+
+pl3 <- pl2 + geom_text(aes(label=Country), color = "gray20",
+                       data = subset(df, Country %in% pointsToLabel),check_overlap = TRUE)
+
+print(pl3)
+
+```
+
+4. Change the grid to white
+```{r}
+pl4 <- pl3 + theme_bw() 
+print(pl4)
+```
+
+5. Improve aesthetic of x axis and y axis, add title, and change the theme
+
+```{r}
+# scale_x_continuous() and scale_y_continuous() are the default scales for 
+#continuous x and y aesthetics.
+
+pl5 <- pl4 + scale_x_continuous(name = "Corruption Perceptions Index, 2011 (10=least corrupt)",
+                                limits = c(.9, 10.5),breaks=1:10) 
+
+pl6 <- pl5 + scale_y_continuous(name = "Human Development Index, 2011 (1=Best)",
+                                limits = c(0.2, 1.0))
+pl6 + ggtitle("Corruption and Human development") + theme_economist_white()
+
+```
